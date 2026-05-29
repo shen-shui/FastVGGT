@@ -95,7 +95,7 @@ def run_model(target_dir, model) -> dict:
     for key in predictions.keys():
         if isinstance(predictions[key], torch.Tensor):
             predictions[key] = predictions[key].detach().float().cpu().numpy().squeeze(0)  # remove batch dimension
-    predictions['pose_enc_list'] = None # remove pose_enc_list
+    predictions.pop("pose_enc_list", None)
 
     # Generate world points from depth map
     print("Computing world points from depth map...")
