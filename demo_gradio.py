@@ -94,14 +94,14 @@ def run_model(target_dir, model) -> dict:
     # Convert tensors to numpy
     for key in predictions.keys():
         if isinstance(predictions[key], torch.Tensor):
-            predictions[key] = predictions[key].cpu().numpy().squeeze(0)  # remove batch dimension
+            predictions[key] = predictions[key].detach().float().cpu().numpy().squeeze(0)  # remove batch dimension
     predictions['pose_enc_list'] = None # remove pose_enc_list
 
     # Generate world points from depth map
     print("Computing world points from depth map...")
     depth_map = predictions["depth"]  # (S, H, W, 1)
     world_points = unproject_depth_map_to_point_map(depth_map, predictions["extrinsic"], predictions["intrinsic"])
-    predictions["world_points_from_depth"] = world_points
+    predictions["world_points_from_depth"] = world_points.astype(np.float32)
 
     # Clean up
     torch.cuda.empty_cache()
@@ -313,7 +313,7 @@ def update_visualization(
     ]
 
     loaded = np.load(predictions_path)
-    predictions = {key: np.array(loaded[key]) for key in key_list}
+    predictions = {key: np.array(loaded[key], dtype=np.float32) for key in key_list}
 
     glbfile = os.path.join(
         target_dir,
