@@ -688,4 +688,9 @@ with gr.Blocks(
         outputs=[reconstruction_output, target_dir_output, image_gallery, log_output],
     )
 
-    demo.queue(max_size=20).launch(show_error=True, share=True)
+    demo.queue(max_size=20).launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        show_error=True,
+        share=False,
+    )
