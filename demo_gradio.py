@@ -74,6 +74,8 @@ def run_model(target_dir, model) -> dict:
 
     images = load_and_preprocess_images(image_names).to(device)
     print(f"Preprocessed images shape: {images.shape}")
+    _, _, height, width = images.shape
+    model.update_patch_dimensions(width // 14, height // 14)
 
     # Run inference
     print("Running inference...")
