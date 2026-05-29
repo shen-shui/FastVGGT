@@ -451,7 +451,6 @@ with gr.Blocks(
                 label="Preview",
                 columns=4,
                 height="300px",
-                show_download_button=True,
                 object_fit="contain",
                 preview=True,
             )
