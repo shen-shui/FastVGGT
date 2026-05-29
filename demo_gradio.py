@@ -30,8 +30,15 @@ print("Initializing and loading VGGT model...")
 # model = VGGT.from_pretrained("facebook/VGGT-1B")  # another way to load the model
 
 model = VGGT()
-_URL = "https://huggingface.co/facebook/VGGT-1B/resolve/main/model.pt"
-model.load_state_dict(torch.hub.load_state_dict_from_url(_URL))
+local_ckpt = os.path.join(os.path.dirname(__file__), "ckpt", "model_tracker_fixed_e20.pt")
+if os.path.exists(local_ckpt):
+    print(f"Loading local checkpoint: {local_ckpt}")
+    state_dict = torch.load(local_ckpt, map_location="cpu")
+else:
+    _URL = "https://huggingface.co/facebook/VGGT-1B/resolve/main/model.pt"
+    print(f"Local checkpoint not found, downloading checkpoint from {_URL}")
+    state_dict = torch.hub.load_state_dict_from_url(_URL)
+model.load_state_dict(state_dict)
 
 
 model.eval()
