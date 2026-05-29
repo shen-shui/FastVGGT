@@ -29,7 +29,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 print("Initializing and loading VGGT model...")
 # model = VGGT.from_pretrained("facebook/VGGT-1B")  # another way to load the model
 
-model = VGGT()
+model = VGGT(enable_point=True, enable_track=True)
 local_ckpt = os.path.join(os.path.dirname(__file__), "ckpt", "model_tracker_fixed_e20.pt")
 if os.path.exists(local_ckpt):
     print(f"Loading local checkpoint: {local_ckpt}")
@@ -38,7 +38,9 @@ else:
     _URL = "https://huggingface.co/facebook/VGGT-1B/resolve/main/model.pt"
     print(f"Local checkpoint not found, downloading checkpoint from {_URL}")
     state_dict = torch.hub.load_state_dict_from_url(_URL)
-model.load_state_dict(state_dict)
+incompat = model.load_state_dict(state_dict, strict=False)
+if incompat.missing_keys or incompat.unexpected_keys:
+    print(f"Loaded checkpoint with partial key mismatch: {incompat}")
 
 
 model.eval()
