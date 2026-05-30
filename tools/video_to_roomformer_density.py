@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from tools.vggt_npz_to_roomformer_density import load_points, points_to_density
+from tools.vggt_npz_to_roomformer_density import load_points, write_density_outputs
 
 
 def parse_args():
@@ -48,7 +48,7 @@ def parse_args():
         help="Confidence key used to filter points.",
     )
     parser.add_argument("--conf-thresh", type=float, default=3.0)
-    parser.add_argument("--plane", choices=["xy", "xz", "yz"], default="xz")
+    parser.add_argument("--plane", choices=["xy", "xz", "yz", "pca01", "pca02", "pca12", "auto"], default="xz")
     parser.add_argument("--size", type=int, default=256)
     parser.add_argument("--padding", type=float, default=0.05)
     parser.add_argument("--flip-x", action="store_true")
@@ -209,7 +209,9 @@ def main():
             mask &= np.isfinite(conf) & (conf >= args.conf_thresh)
 
     points = load_points(predictions, args.points_key, args.conf_key, args.conf_thresh)
-    density = points_to_density(
+    density_path = args.output_dir / "density.png"
+    selected_plane = write_density_outputs(
+        density_path,
         points,
         plane=args.plane,
         size=args.size,
@@ -217,11 +219,7 @@ def main():
         flip_x=args.flip_x,
         flip_y=args.flip_y,
     )
-
-    density_path = args.output_dir / "density.png"
-    if not cv2.imwrite(str(density_path), (density * 255).astype(np.uint8)):
-        raise OSError(f"Failed to write {density_path}")
-    print(f"Wrote {density_path} from {points.shape[0]} points")
+    print(f"Wrote {density_path} from {points.shape[0]} points (plane={selected_plane})")
 
     if args.max_ply_points > 0:
         colors = point_colors(predictions, mask)
